@@ -122,6 +122,7 @@ private_key_list = private_key_list[private_key_len:]
 seed = private_key[:32]
 pubkey = private_key[32:]
 
+print("hex:")
 print(seed[0:8].hex())
 print(seed[8:16].hex())
 print(seed[16:24].hex())
