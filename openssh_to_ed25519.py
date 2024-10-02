@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import base64
-import ed25519
 import sys
 
 if len(sys.argv) < 2:
@@ -120,7 +119,12 @@ private_key_list = private_key_list[4:]
 private_key = private_key_list[:private_key_len]
 private_key_list = private_key_list[private_key_len:]
 
-privkey = ed25519.SigningKey(private_key)
-print("hex key:", privkey.to_ascii(encoding='hex').decode('utf-8'))
-print("base64 key:", privkey.to_ascii(encoding='base64').decode('utf-8'))
+seed = private_key[:32]
+pubkey = private_key[32:]
+
+print(seed[0:8].hex())
+print(seed[8:16].hex())
+print(seed[16:24].hex())
+print(seed[24:32].hex())
+print("base64 key:", base64.b64encode(seed).decode('utf-8'))
 
