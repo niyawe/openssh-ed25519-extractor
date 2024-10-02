@@ -128,3 +128,4 @@ print(seed[16:24].hex())
 print(seed[24:32].hex())
 print("base64 key:", base64.b64encode(seed).decode('utf-8'))
 
+print("pubkey: ", pubkey.hex())

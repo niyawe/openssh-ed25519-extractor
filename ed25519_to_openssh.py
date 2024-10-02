@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 import base64
-import ed25519
 import secrets
 import sys
+from ed25519 import secret_to_public
 
 keyformat = input("key format [hex, base64]: ")
 
@@ -11,11 +11,30 @@ if not keyformat in ['hex','base64']:
     print("unknown key format")
     sys.exit(1)
 
-key = input("key: ")
+keybytes = bytes()
 
-key = ed25519.from_ascii(key, encoding=keyformat)
-privkey = ed25519.SigningKey(key)
-pubkey = privkey.get_verifying_key()
+if keyformat == "hex":
+    key = ""
+    while len(key) < 64:
+        key += input("key: ")
+    if len(key) != 64:
+        print("key too long")
+        sys.exit(1)
+    keybytes = bytes.fromhex(key)
+elif keyformat == "base64":
+    key = ""
+    decoded_len = 0
+    while decoded_len != 32:
+        key += input("key: ")
+        tmp_key = key + "=" * ((4 - len(key) % 4) % 4)
+        decoded_len = len(base64.b64decode(tmp_key))
+    key += "=" * ((4 - len(key) % 4) % 4)
+    keybytes = base64.b64decode(tmp_key)
+else:
+    pass
+
+pubkey = secret_to_public(keybytes)
+print("pubkey: ", pubkey.hex())
 
 # AUTH_MAGIC
 data = b'openssh-key-v1\0'
@@ -34,7 +53,7 @@ data += b'ssh-ed25519'
 # public key length
 data += b'\0\0\0\x20'
 # public key
-data += pubkey.to_bytes()
+data += pubkey
 # private key length
 data += b'\0\0\0\x88'
 # checkint
@@ -46,10 +65,10 @@ data += b'ssh-ed25519'
 # public key length
 data += b'\0\0\0\x20'
 # public key
-data += pubkey.to_bytes()
+data += pubkey
 # private key length
 data += b'\0\0\0\x40'
-data += privkey.to_bytes()
+data += keybytes
 # comment length
 data += b'\0\0\0\0'
 # padding
