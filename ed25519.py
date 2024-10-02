@@ -12,12 +12,6 @@ def modp_inv(x):
 # Curve constant
 d = -121665 * modp_inv(121666) % p
 
-# Group order
-q = 2**252 + 27742317777372353535851937790883648493
-
-def sha512_modq(s):
-    return int.from_bytes(sha512(s), "little") % q
-
 ## Then follows functions to perform point operations.
 
 # Points are represented as tuples (X, Y, Z, T) of extended
@@ -38,14 +32,6 @@ def point_mul(s, P):
         P = point_add(P, P)
         s >>= 1
     return Q
-
-def point_equal(P, Q):
-    # x1 / z1 == x2 / z2  <==>  x1 * z2 == x2 * z1
-    if (P[0] * Q[2] - Q[0] * P[2]) % p != 0:
-        return False
-    if (P[1] * Q[2] - Q[1] * P[2]) % p != 0:
-        return False
-    return True
 
 ## Now follows functions for point compression.
 
@@ -85,19 +71,6 @@ def point_compress(P):
     x = P[0] * zinv % p
     y = P[1] * zinv % p
     return int.to_bytes(y | ((x & 1) << 255), 32, "little")
-
-def point_decompress(s):
-    if len(s) != 32:
-        raise Exception("Invalid input length for decompression")
-    y = int.from_bytes(s, "little")
-    sign = y >> 255
-    y &= (1 << 255) - 1
-
-    x = recover_x(y, sign)
-    if x is None:
-        return None
-    else:
-        return (x, y, 1, x*y % p)
 
 ## These are functions for manipulating the private key.
 
